@@ -1,6 +1,7 @@
 import cognitive_face as CF
 import cv2
 
+# 出力結果サンプル　[{'faceId': 'aa2fa9b3-86fa-4f06-94c1-ff93e913e0ae', 'faceRectangle': {'top': 153, 'left': 61, 'width': 137, 'height': 137}}]
 
 #顔の座標情報からRect作成
 def getRectangle(faceDictionary):
@@ -26,7 +27,7 @@ filePath = ""
 #顔特定
 faces = CF.face.detect(filePath)
 
-
+print(faces)
 #画像読み込み
 image = cv2.imread(filePath)
 
