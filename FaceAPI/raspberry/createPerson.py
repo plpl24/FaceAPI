@@ -3,7 +3,7 @@ import sys
 
 import cognitive_face as CF
 
-import init
+from FaceAPI.raspberry import init
 
 # personを作成し、顔写真を登録します
 # python createPerson.py 名前 情報 顔写真が格納されたフォルダ(jpg)

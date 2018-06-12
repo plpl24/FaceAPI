@@ -1,6 +1,5 @@
 # coding:utf-8
 import io
-import time
 import threading
 import picamera
 import numpy as np
@@ -8,7 +7,7 @@ import cv2
 import time
 from datetime import datetime
 import cognitive_face as CF
-import init
+from FaceAPI.raspberry import init
 
 init.Init(CF)
 # Create a pool of image processors

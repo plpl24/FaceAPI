@@ -1,9 +1,9 @@
 import cv2
 
 
-cas = 'carDitector.xml'
+cas = 'carDitector.xml' #526枚の画像を学習させた分類器
 
-image_path = 'car3.jpg'
+image_path = 'car.jpg'
 
 image =cv2.imread(image_path)
 imageG = cv2.imread(image_path,0)
