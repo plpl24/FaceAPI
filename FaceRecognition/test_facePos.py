@@ -6,7 +6,7 @@ import numpy as np
 class TestFacePos(TestCase):
     def test_update_on_same_face1(self):
         fd.maxFaceDistance = 30
-        facePos = fd.FacePos(np.array((20,20)),"A")
+        facePos = fd.FaceInfo(np.array((20, 20)), "A")
         self.assertTrue(facePos.update_on_same_face(np.array((20,20))))
         self.assertTrue(facePos.update_on_same_face(np.array((40,40))))
 
@@ -14,7 +14,7 @@ class TestFacePos(TestCase):
 
     def test_update_on_same_face2(self):
         fd.maxFaceDistance = 10
-        facePos = fd.FacePos(np.array((20,20)),"A")
+        facePos = fd.FaceInfo(np.array((20, 20)), "A")
         self.assertTrue(facePos.update_on_same_face(np.array((20,20))))
         self.assertFalse(facePos.update_on_same_face(np.array((40,40))))
 
