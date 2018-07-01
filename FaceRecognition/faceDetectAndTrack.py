@@ -3,13 +3,14 @@ import cv2
 import face_recognition
 import time
 import numpy as np
+from datetime import datetime
 scaleRate = 0.4  # カメラ画像の縮小率
 maxFaceDistance = 30  # 前フレームの顔と現在の顔の最大距離、これを超えて顔が認識された場合別人として処理する
 cameraID = 1
 leftFrameCount = 5  # 顔が映らなくなってから、顔を保持するフレーム数
 minFaceSize = 60  # 画像内に映る顔の最小の大きさ　小さくすると重くなる
 font = cv2.FONT_HERSHEY_DUPLEX
-knownFaceDir = "knownFace" # 知っている顔の写真(jpg)が入ったフォルダ　写真ファイル名がその人の名前として画面に表示される
+knownFaceDir = "knownFace"  # 知っている顔の写真(jpg)が入ったフォルダ　写真ファイル名がその人の名前として画面に表示される
 index = 0
 
 
@@ -40,19 +41,17 @@ class FaceInfo:
 # 顔についての処理を行うクラス
 class FaceProcessor:
     def __init__(self):
-        import glob
-        import os
-        self.known_face_encodings = []
-        self.known_face_names = []
+        import glob, os
+        self.known_face_encodings = []  # 知っている顔の情報
+        self.known_face_names = []  # 知っている顔の名前
         image_path = glob.glob("{}/*.jpg".format(knownFaceDir))
         for path in image_path:
-            img =  face_recognition.load_image_file(path)
-            self.known_face_encodings.append(face_recognition.face_encodings(img)[0])
-            fileName = os.path.basename(path)
-            fileName = fileName[:fileName.find(".")]
-            self.known_face_names.append(fileName)
+            img = face_recognition.load_image_file(path)
+            self.known_face_encodings.append(face_recognition.face_encodings(img)[0])  # 顔情報追加
+            file_name = os.path.basename(path)
+            file_name = file_name[:file_name.find(".")]
+            self.known_face_names.append(file_name)  # ファイル名を追加
         self.cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
-
 
     def detect_face(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -62,8 +61,8 @@ class FaceProcessor:
         return rect[0][0] + int(rect[0][2] / 2), rect[0][1] + int(rect[0][3] / 2)  # 中央座標計算
 
     # 顔を識別して名前を返す
-    # f : frame
-    # return Name 顔を発見できなかった場合Noneを返します
+    # f : frame image
+    # return face_recognitionが顔を発見できなかった場合Noneを返します
     def get_name(self, f):
         face_encodings = face_recognition.face_encodings(f)
         if len(face_encodings) == 0:
@@ -77,6 +76,8 @@ class FaceProcessor:
         if True in matches:
             first_match_index = matches.index(True)
             name = self.known_face_names[first_match_index]
+        else:
+            cv2.imwrite("unknownFace_{}.jpg".format(datetime.now().strftime("%m/%d %H:%M:%S")),f)
 
         return name
 
