@@ -4,6 +4,7 @@ import face_recognition
 import time
 import numpy as np
 from datetime import datetime
+
 scaleRate = 0.4  # カメラ画像の縮小率
 maxFaceDistance = 30  # 前フレームの顔と現在の顔の最大距離、これを超えて顔が認識された場合別人として処理する
 cameraID = 1
@@ -11,9 +12,8 @@ leftFrameCount = 5  # 顔が映らなくなってから、顔を保持するフ�
 minFaceSize = 60  # 画像内に映る顔の最小の大きさ　小さくすると重くなる
 font = cv2.FONT_HERSHEY_DUPLEX
 knownFaceDir = "knownFace"  # 知っている顔の写真(jpg)が入ったフォルダ　写真ファイル名がその人の名前として画面に表示される
-index = 0
-
-
+logDir = "face_log"
+unknownFaceDir = "unknownFace" # 知らない顔が検知されたときの画像を保存する場所
 # 同時に最大で一人映っていると想定
 
 # 顔の情報を扱うクラス
@@ -76,8 +76,6 @@ class FaceProcessor:
         if True in matches:
             first_match_index = matches.index(True)
             name = self.known_face_names[first_match_index]
-        else:
-            cv2.imwrite("unknownFace_{}.jpg".format(datetime.now().strftime("%m/%d %H:%M:%S")),f)
 
         return name
 
@@ -87,6 +85,11 @@ class FaceDetectAndIdentify:
         self.__face_processor = FaceProcessor()
         self.__old_face = None
         self.__no_face_frame_count = 0
+        import os
+        if not os.path.exists(logDir):
+            os.mkdir(logDir)
+        if not os.path.exists(unknownFaceDir):
+            os.mkdir(unknownFaceDir)
 
     # 顔を検出、識別して見つけた顔(FaceInfo)を返す
     # frame : 画像フレーム
@@ -100,20 +103,31 @@ class FaceDetectAndIdentify:
                 self.__no_face_frame_count = leftFrameCount  # 残フレームリセット
 
             else:  # 新しい顔が認識された
-                print("new person detected", time.time())
-                name = self.__face_processor.get_name(frame)
-                if name is None:  # cv2によって顔が認識されたがface_recognitionが顔を発見できなかった場合。
-                    pass
-                else:
-                    self.__old_face = FaceInfo(center, name)  # 新しく顔情報を生成
+                self.detect_new_face(center, frame)
+
         else:  # 顔が映っていなかった場合
             if self.__old_face is not None:  # 過去に顔が映っていた場合
                 self.__no_face_frame_count = self.__no_face_frame_count - 1  # 残り保持フレーム数を減らす
                 if self.__no_face_frame_count <= 0:  # 保持フレーム数が無くなったら
-                    print("oldFacePos delete", time.time())
+                    print("old face delete", time.time())
                     self.__old_face = None  # 過去の顔情報を消す
 
         return self.__old_face
+
+    def detect_new_face(self, center, frame):
+        print("new person detected", time.time())
+        name = self.__face_processor.get_name(frame)
+        if name is not None:
+            print("{} detect".format(name))
+            self.__old_face = FaceInfo(center, name)  # 新しく顔情報を生成
+            if name is 'Unknown':
+                cv2.imwrite("{}/unknownFace_{}.jpg".format(unknownFaceDir,datetime.now().strftime("%m/%d %H:%M:%S")), f)
+            # log書き込み
+            log = open("{}/face_log_{}.txt".format(logDir,datetime.now().strftime("%m_%d")), 'a+')
+            log.write("{} detect \t {}\n".format(name, datetime.now().strftime("%y/%m/%d %H:%M:%S")))
+            log.close()
+        else:
+            print("face_recognition not found face")  # cv2によって顔が認識されたがface_recognitionが顔を発見できなかった場合。
 
 
 # メイン　主に描画処理を行う
