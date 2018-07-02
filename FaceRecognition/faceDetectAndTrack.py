@@ -120,8 +120,8 @@ class FaceDetectAndIdentify:
         if name is not None:
             print("{} detect".format(name))
             self.__old_face = FaceInfo(center, name)  # 新しく顔情報を生成
-            if name is 'Unknown':
-                cv2.imwrite("{}/unknownFace_{}.jpg".format(unknownFaceDir,datetime.now().strftime("%m/%d %H:%M:%S")), f)
+            if name=='Unknown':
+                cv2.imwrite("{}/unknownFace_{}.jpg".format(unknownFaceDir,datetime.now().strftime("%m_%d %H_%M_%S")), frame)
             # log書き込み
             log = open("{}/face_log_{}.txt".format(logDir,datetime.now().strftime("%m_%d")), 'a+')
             log.write("{} detect \t {}\n".format(name, datetime.now().strftime("%y/%m/%d %H:%M:%S")))
