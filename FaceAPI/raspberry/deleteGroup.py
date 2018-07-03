@@ -1,4 +1,4 @@
-import init
+from FaceAPI.raspberry import init
 import cognitive_face as CF
 
 init.Init(CF)
