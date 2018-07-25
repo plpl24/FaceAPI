@@ -1,7 +1,12 @@
 import cognitive_face as CF
 import cv2
 import glob
+from faceCap_faceRecog.faceRecog import getFileFromSmb
 
+
+x = getFileFromSmb('150.89.234.237', 'pi', 'Downloads\FaceAPI_old\Tracking', 'images')
+x.get_images()
+exit(0)
 
 # 必ず learningFaceを実行した後に実行する
 # sample/test内の写真にlearningFaceで学習した人が映っているかどうかを表示する
