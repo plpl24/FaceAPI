@@ -1,8 +1,13 @@
 import cv2
 from datetime import datetime
+import os
 camera = cv2.VideoCapture(0)
 cascade = cv2.CascadeClassifier("face_cascade.xml")
-savePath = "."
+
+savePath = "images"
+if not os.path.isdir(savePath):
+    os.makedirs(savePath)
+
 while True :
     try:
         time0 = cv2.getTickCount()
