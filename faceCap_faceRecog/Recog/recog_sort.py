@@ -17,7 +17,7 @@ def dir_conf(dir_name: str):
 
 
 class faceRecog_sort:
-    def __init__(self, sorted_paths: list, sheet_name: str, faceapi_key:str):
+    def __init__(self, sorted_paths: list, sheet_name: str, faceapi_key: str):
         """
         :param sorted_paths: 識別する画像と振り分け先ディレクトリのパス　
                     0:顔が発見できなかった,1:個人を識別できた,2:個人を識別できなかった
@@ -26,7 +26,6 @@ class faceRecog_sort:
         """
         for path in sorted_paths:
             dir_conf(path)
-
 
         self.FaceNotMatch_path = sorted_paths[0]
         self.Identified_path = sorted_paths[1]
@@ -52,7 +51,7 @@ class faceRecog_sort:
                 cap_time = dt.strptime(os.path.splitext(file_name)[0], getFileFromSmb.ft)  # 撮影した時間を取得
 
                 try:
-                    name = self.face.get_name(file,debug=debug)  # 顔識別
+                    name = self.face.get_name(file, debug=debug)  # 顔識別
                     if name is None:  # 顔が識別できたか
                         shutil.move(file, "{}/{}".format(self.FaceNotMatch_path, file_name))
                     else:
@@ -84,16 +83,16 @@ if __name__ == '__main__':
     file_getter_exit = getFileFromSmb.getFileFromSmb('', 'pi', 'Downloads\FaceAPI_old\\face', IMG_path)
 
     paths = ["faceNotFound", "identifiedIMG", "faceNotMatch"]
-    recog = faceRecog(paths, "faceRecog", "50a2cf7e80844d0c80b31c5d8ce16b96")
+    recog = faceRecog_sort(paths, "faceRecog", "50a2cf7e80844d0c80b31c5d8ce16b96")
 
     print("画像取得開始")
 
     file_getter_entry.get_images()
 
-    recog(IMG_path, "入室しました",debug=True)
+    recog(IMG_path, "入室しました", debug=True)
 
     file_getter_exit.get_images()
 
-    recog(IMG_path, "退室しました",debug=True)
+    recog(IMG_path, "退室しました", debug=True)
 
     exit(0)
