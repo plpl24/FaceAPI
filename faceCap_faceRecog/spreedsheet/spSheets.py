@@ -1,5 +1,6 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from datetime import datetime as dt
 
 
 class sp_sheets:
@@ -17,12 +18,16 @@ class sp_sheets:
         return self.wks.acell(place).value
 
     def get_last_row(self, column: str) -> int:
-        row = 1
-        while self.read('{}{}'.format(column,row)) != '':
+        row = 0
+        while self.read('{}{}'.format(column,row+1)) != '':
             row = row + 1
 
         return row
 
+    def write_datetime(self,place,datetime:dt):
+        self.write(place,datetime.strftime('%Y/%m/%d %H:%M:%S:%f'))
 
-sheet = sp_sheets('faceRecog')
-print(sheet.get_last_row('B'))
+# example
+# sheet = sp_sheets('faceRecog')
+# print(sheet.write('B1','hi'))
+# print(sheet.get_last_row('B'))
