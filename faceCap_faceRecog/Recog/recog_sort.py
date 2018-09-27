@@ -79,6 +79,12 @@ class faceRecog_sort:
 if __name__ == '__main__':
     IMG_path = 'IMG'  # smbから取得してきた画像が一時出来に保存される場所
 
+    file_getter_entry = getFileFromSmb.getFileFromSmb('192.168.0.20',ID,PW,
+                                                      'plpl24', 'images',IMG_path,debug=True)
+    file_getter_entry.get_images()
+    exit(0)
+
+
     file_getter_entry = getFileFromSmb.getFileFromSmb('150.89.234.237', 'pi', 'Downloads\FaceAPI_old\\face', IMG_path)
     file_getter_exit = getFileFromSmb.getFileFromSmb('', 'pi', 'Downloads\FaceAPI_old\\face', IMG_path)
 

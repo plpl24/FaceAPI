@@ -6,20 +6,20 @@ import numpy as np
 import os
 from datetime import datetime as dt
 
-
 # とってきた画像の名前は　作成日時.jpgになる
 # 作成日時:YYYY_MM_dd_HH_mm_ss_ms
 
 ft = '%Y_%m_%d_%H_%M_%S_%f'
 
+
 # 指定されたディレクトリ内の画像をローカルにコピーする
 # get_imagesを呼び出すたびに、画像が作成された日時を確認して、新たに作成された画像のみがコピーされる
 class getFileFromSmb:
-    def __init__(self, ip_address, service_name, retrieve_path, save_path,max_IMG = 10,debug = False):
+    def __init__(self, ip_address, id, pw, service_name, retrieve_path, save_path, max_IMG=10, debug=False):
         self.dataFile_name = 'last_time.txt'
         self.__conn = SMBConnection(
-            'pi',  # ID
-            'raspberry',  # PW
+            id,  # ID
+            pw,  # PW
             platform.uname().node,
             '',
         )
@@ -32,9 +32,11 @@ class getFileFromSmb:
         self.__debug = debug
         self.__last_time = dt.min
 
-        with open(self.dataFile_name, 'r+') as file:
-            data = file.read()
-            self.__last_time = dt.strptime(data,ft)
+        if os.path.isfile(self.dataFile_name):
+            with open(self.dataFile_name, 'r+') as file:
+                data = file.read()
+                self.__last_time = dt.strptime(data, ft)
+
         if self.__debug:
             print('getFileFromSmb初期化　最終更新日時は{}に設定されました.'.format(self.__last_time))
 
@@ -52,7 +54,7 @@ class getFileFromSmb:
 
             create_time = self.__get_create_time(file_name)  # 画像作成日時
             if self.__last_time < create_time:
-                if self.__debug :
+                if self.__debug:
                     print("{}をコピーします".format(file_name))
                 copy_count = copy_count + 1
                 self.__retrieve_image(file_name, create_time)  # 画像保存
@@ -63,7 +65,7 @@ class getFileFromSmb:
         if self.__debug:
             print("最終更新日時を更新しました {}".format(self.__last_time))
         with open(self.dataFile_name, 'w+') as file:
-             file.write(self.__last_time.strftime(ft))
+            file.write(self.__last_time.strftime(ft))
         if self.__debug:
             print("{}枚をコピーしました".format(copy_count))
 
