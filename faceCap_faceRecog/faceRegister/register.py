@@ -27,9 +27,11 @@ def getPersonID(PERSON_NAME):
     return None
 
 
+
 personID = getPersonID(PERSON_NAME)
 
 if personID is None:
+
     res = CF.person.create(GROUP_ID, PERSON_NAME, PERSON_DATA)
     personID = res['personId']
 
@@ -39,15 +41,36 @@ files = glob.glob("{}/*.jpg".format(args[2]))
 index = 0
 for file in files:
     print("{} 写真登録".format(file))
-    res = CF.person.add_face(file, GROUP_ID, personID, "face_data {}".format(index))
-    index += 1
+    try:
+        res = CF.person.add_face(file, GROUP_ID, personID, "face_data {}".format(index))
+        index += 1
+    except CF.util.CognitiveFaceException as e:
+        if e.status_code == 429:
+            print("faceAPI使用上限を超えました {}秒後に再識別を開始します".format(30))
+            for i in range(30):
+                from time import sleep
+                sleep(1)
+                print(30 - i)
+            else:
+                print(e)
+                exit(1)
     # --
     # if (index > 2): break
 
 # -----学習開始-------------
+try:
+    CF.person_group.train(GROUP_ID)
+except CF.util.CognitiveFaceException as e:
+    if e.status_code == 429:
+        print("faceAPI使用上限を超えました {}秒後に再識別を開始します".format(30))
+        for i in range(30):
+            from time import sleep
 
-CF.person_group.train(GROUP_ID)
-
+            sleep(1)
+            print(30 - i)
+        else:
+            print(e)
+            exit(1)
 # -----学習終了待ち ---------
 while CF.person_group.get_status(GROUP_ID)["status"] == "running":
     import time

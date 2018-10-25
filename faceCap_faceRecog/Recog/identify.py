@@ -27,13 +27,17 @@ class identify_face:
 
             response = response[0]  # 一人目のみ取得
             if len(response['candidates']) != 0:  # 候補者が存在したら
+
                 person_id = response['candidates'][0]['personId']  # 候補者のpersonIDを取得
-                return CF.person.get(self.__GROUP_ID, person_id)['name']
+                if response['candidates'][0]['confidence'] >=0.6:
+                    return CF.person.get(self.__GROUP_ID, person_id)['name']
+                else:
+                    return None
             else:
                 return None
         except CF.util.CognitiveFaceException as e:
             if debug:
-                if e.status_code == 403:
+                if e.status_code == 429:
                     print("faceAPI使用上限を超えました {}秒後に再識別を開始します".format(self.wait_time))
                     for i in range(self.wait_time):
                         sleep(1)

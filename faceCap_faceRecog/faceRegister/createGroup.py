@@ -15,7 +15,7 @@ GROUP_ID = "zemi_group"  # グループID グループにアクセスする際�
 GROUP_NAME = "zemiGroup"  # グループの名前 最大長128
 GROUP_DATA = "zemi"  # グループに関するデータ　何でもいい　最大長16KB
 if __name__ == '__main__':
-    CF.person_group.delete(GROUP_ID)
+    #CF.person_group.delete(GROUP_ID)
     CF.person_group.create(GROUP_ID, GROUP_NAME, GROUP_DATA)  # グループ作成 グループID以外は指定しなくてもよい
 # CF.person_group.get(groupID) #グループID,名前,ユーザーデータが取得できる
 

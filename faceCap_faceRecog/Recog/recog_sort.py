@@ -5,6 +5,7 @@ import glob
 import os
 from datetime import datetime as dt
 import shutil
+import gspread
 
 
 def dir_conf(dir_name: str):
@@ -55,23 +56,23 @@ class faceRecog_sort:
                     if name is None:  # 顔が識別できたか
                         shutil.move(file, "{}/{}".format(self.FaceNotMatch_path, file_name))
                     else:
-                        shutil.move(file, "{}/{}".format(self.Identified_path, file_name))
+                        shutil.move(file, "{}/{}".format(self.Identified_path,"{}_{}".format(name,file_name)))
 
                     RESULT.append({'time': cap_time, 'name': name})
                 except ValueError:
-                    if debug: print("顔が見つかりませんでした {}\nファイルを{}に移動します".format(file_name, self.FaceNotFound_path))
+                    if debug: print("顔が見つかりませんでした {}ファイルを{}に移動します".format(file_name, self.FaceNotFound_path))
                     shutil.move(file, "{}/{}".format(self.FaceNotFound_path, file_name))
         except KeyboardInterrupt as e:
             if debug: print("キーボード入力がありました,終了します")
 
         if debug: print('spreedSheetsに書込み開始')
         sheet = spSheets.sp_sheets(self.sheet_name)
-
         last_row = sheet.get_last_row('A')
+        print("LAST＿LOW　＝　{}".format(last_row))
         for data in RESULT:
             last_row += 1
-            sheet.write('A{}'.format(last_row), data['time'])
-            sheet.write('B{}'.format(last_row), data['name'])
+            sheet.write('A{}'.format(last_row), str(data['time']))
+            sheet.write('B{}'.format(last_row), str(data['name']))
             sheet.write('C{}'.format(last_row), message)
         if debug: print(RESULT)
 
@@ -79,26 +80,34 @@ class faceRecog_sort:
 if __name__ == '__main__':
     IMG_path = 'IMG'  # smbから取得してきた画像が一時出来に保存される場所
 
-    file_getter_entry = getFileFromSmb.getFileFromSmb('192.168.0.20',ID,PW,
-                                                      'plpl24', 'images',IMG_path,debug=True)
-    file_getter_entry.get_images()
-    exit(0)
+    file_getter_entry = getFileFromSmb.getFileFromSmb('150.89.234.229',
+                                                      'pi', 'raspberry', 'pi', 'images', IMG_path, debug=True,
+                                                      isDelete=True)
 
+    file_getter_exit = getFileFromSmb.getFileFromSmb('150.89.234.236',
+                                                     'pi', 'raspberry', 'pi', 'images', IMG_path, debug=True,
+                                                     isDelete=True)
+    # file_getter_exit = getFileFromSmb.getFileFromSmb('', 'pi', 'Downloads\FaceAPI_old\\face', IMG_path)
 
-    file_getter_entry = getFileFromSmb.getFileFromSmb('150.89.234.237', 'pi', 'Downloads\FaceAPI_old\\face', IMG_path)
-    file_getter_exit = getFileFromSmb.getFileFromSmb('', 'pi', 'Downloads\FaceAPI_old\\face', IMG_path)
-
-    paths = ["faceNotFound", "identifiedIMG", "faceNotMatch"]
+    paths = ["faceNotMatch", "identifiedIMG", "faceNotFound"]
     recog = faceRecog_sort(paths, "faceRecog", "50a2cf7e80844d0c80b31c5d8ce16b96")
 
-    print("画像取得開始")
+    while True :
 
-    file_getter_entry.get_images()
+        try:
 
-    recog(IMG_path, "入室しました", debug=True)
 
-    file_getter_exit.get_images()
+            print("入室画像取得開始")
 
-    recog(IMG_path, "退室しました", debug=True)
+            file_getter_entry.get_images()
+            recog(IMG_path, "入室しました", debug=True)
 
-    exit(0)
+            print("退室画像取得開始")
+            file_getter_exit.get_images()
+
+            recog(IMG_path, "退室しました", debug=True)
+            import time
+            print("入退室処理完了一分後に再処理を開始します")
+            time.sleep(60) #一分後に再識別
+        except KeyboardInterrupt as e:
+            exit(0)

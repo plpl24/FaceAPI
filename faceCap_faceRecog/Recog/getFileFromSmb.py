@@ -15,8 +15,9 @@ ft = '%Y_%m_%d_%H_%M_%S_%f'
 # 指定されたディレクトリ内の画像をローカルにコピーする
 # get_imagesを呼び出すたびに、画像が作成された日時を確認して、新たに作成された画像のみがコピーされる
 class getFileFromSmb:
-    def __init__(self, ip_address, id, pw, service_name, retrieve_path, save_path, max_IMG=10, debug=False):
-        self.dataFile_name = 'last_time.txt'
+    def __init__(self, ip_address, id, pw, service_name, retrieve_path, save_path, max_IMG=10, debug=False,isDelete =True):
+        self.isDelete = isDelete
+        self.dataFile_name = 'last_time_{}.txt'.format(ip_address)
         self.__conn = SMBConnection(
             id,  # ID
             pw,  # PW
@@ -77,3 +78,5 @@ class getFileFromSmb:
         new_name = "{}.jpg".format(create_time.strftime(ft))
         with open('{}\{}'.format(self.__save_path, new_name), 'wb') as file:
             self.__conn.retrieveFile(self.__service_name, '{}\{}'.format(self.__retrieve_path, file_name), file)
+            if self.isDelete :
+                self.__conn.deleteFiles(self.__service_name, '{}\{}'.format(self.__retrieve_path, file_name))
