@@ -1,12 +1,13 @@
-from faceCap_faceRecog.Recog.identify import identify_face
-from faceCap_faceRecog.Recog import getFileFromSmb
-from faceCap_faceRecog.spreedsheet import spSheets
+from identify import identify_face
+import getFileFromSmb
+import spSheets
 import glob
 import os
 from datetime import datetime as dt
 import shutil
 import gspread
 
+sheet = spSheets.sp_sheets("faceRecog")
 
 def dir_conf(dir_name: str):
     """
@@ -66,21 +67,22 @@ class faceRecog_sort:
             if debug: print("キーボード入力がありました,終了します")
 
         if debug: print('spreedSheetsに書込み開始')
-        sheet = spSheets.sp_sheets(self.sheet_name)
+        global sheet
         last_row = sheet.get_last_row('A')
         print("LAST＿LOW　＝　{}".format(last_row))
         for data in RESULT:
             last_row += 1
-            sheet.write('A{}'.format(last_row), str(data['time']))
-            sheet.write('B{}'.format(last_row), str(data['name']))
-            sheet.write('C{}'.format(last_row), message)
+            sheet.write(last_row,'A'.format(last_row), str(data['time']))
+            sheet.write(last_row,'B'.format(last_row), str(data['name']))
+            sheet.write(last_row,'C'.format(last_row), message)
         if debug: print(RESULT)
 
 
 if __name__ == '__main__':
+    
     IMG_path = 'IMG'  # smbから取得してきた画像が一時出来に保存される場所
 
-    file_getter_entry = getFileFromSmb.getFileFromSmb('150.89.234.229',
+    file_getter_entry = getFileFromSmb.getFileFromSmb('150.89.234.237',
                                                       'pi', 'raspberry', 'pi', 'images', IMG_path, debug=True,
                                                       isDelete=True)
 
