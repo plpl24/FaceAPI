@@ -2,15 +2,18 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime as dt
 import time
-
+import http
 
 class sp_sheets:
-    def __init__(self, sheetName: str) -> None:
+    def connect(self):
         scope = ['https://spreadsheets.google.com/feeds',
                  'https://www.googleapis.com/auth/drive']
         credentials = ServiceAccountCredentials.from_json_keyfile_name('FaceCapRecog-ed25a3a6a0c9.json', scope)
         gc = gspread.authorize(credentials)
-        self.wks = gc.open(sheetName).sheet1
+        return gc.open(self.sheetName).sheet1
+        
+    def __init__(self, sheetName: str) -> None:
+        self.sheetName=sheetName
         self.row = self.read('D1')
         if self.row == '':
             self.row = 0
@@ -21,26 +24,26 @@ class sp_sheets:
 
 
 
-    def write(self, place: str, text: str):
-        try:
-            print("{}に書き込みます".format(place))
-            self.wks.update_acell(place, text)
-            currentRow = int(place[1])
-            if self.row < currentRow:
-                self.row = currentRow
-                self.wks.update_acell('D1',currentRow)
-            print(currentRow)
-        except gspread.exceptions.APIError as e:
-            print(e)
-            for t in range(30):
-                time.sleep(1)
-                print(30-t)
-            self.write(place, text)
+    def write(self,col:int, p: str, text: str):
+        wks = self.connect()
+
+
+        place = "{}{}".format(p,col)
+        print("{}に書き込みます".format(place))
+        wks.update_acell(place, text)
+        currentRow = col
+        print("currentRow {},row {}".format(currentRow,self.row))
+        if self.row < currentRow:
+
+            self.row = currentRow
+            wks.update_acell('D1',currentRow)
+        print(currentRow)
+
 
     def read(self, place: str) -> str:
-
+        wks = self.connect()
         try:
-            return self.wks.acell(place).value
+            return wks.acell(place).value
         except gspread.exceptions.APIError as e:
             print(e)
             for t in range(30):
