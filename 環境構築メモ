@@ -1,0 +1,18 @@
+raspbianのVNC接続時の解像度を設定
+/boot/config.txt
+
+raspbianにopencvをインストール
+pip3 install opencv-python
+sudo apt-get install libatlas-base-dev
+sudo apt-get install libjasper-dev
+sudo apt-get install libqtgui4
+sudo apt-get install libqt4-test
+pythonにfaceAPI用ライブラリをインストール
+pip3 install cognitive_face
+pythonにsmb用ライブラリをインストール
+pip3 install pysmb
+pythonにDBアクセス用ライブラリをインストール
+pip3 install pyodbc
+
+
+

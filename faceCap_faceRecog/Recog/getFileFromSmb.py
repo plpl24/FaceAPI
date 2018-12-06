@@ -1,5 +1,6 @@
 import os
 import platform
+import socket
 from datetime import datetime as dt
 
 from smb.SMBConnection import SMBConnection
@@ -20,7 +21,10 @@ class getFileFromSmb:
             platform.uname().node,
             '',
         )
-        if not self.__conn.connect(self.ip_address):
+        try:
+            if not self.__conn.connect(self.ip_address):
+                raise ValueError("smbサーバに接続できません")
+        except socket.timeout as e:
             raise ValueError("smbサーバに接続できません")
 
     def __init__(self, ip_address, id, pw, service_name, retrieve_path, save_path, max_IMG=10, debug=False,

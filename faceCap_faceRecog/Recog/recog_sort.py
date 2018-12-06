@@ -1,13 +1,12 @@
 from identify import identify_face
 import getFileFromSmb
-import spSheets
 import glob
 import os
 from datetime import datetime as dt
 import shutil
-import gspread
 
-sheet = spSheets.sp_sheets("faceRecog")
+from DBAccess.DAOBJ import DAO
+
 
 def dir_conf(dir_name: str):
     """
@@ -66,16 +65,12 @@ class faceRecog_sort:
         except KeyboardInterrupt as e:
             if debug: print("キーボード入力がありました,終了します")
 
-        if debug: print('spreedSheetsに書込み開始')
-        global sheet
-        last_row = sheet.get_last_row('A')
-        print("LAST＿LOW　＝　{}".format(last_row))
-        for data in RESULT:
-            last_row += 1
-            sheet.write(last_row,'A'.format(last_row), str(data['time']))
-            sheet.write(last_row,'B'.format(last_row), str(data['name']))
-            sheet.write(last_row,'C'.format(last_row), message)
-        if debug: print(RESULT)
+        if debug: print('SQL')
+        with DAO() as dao:
+            for res in RESULT:
+                dao.write(res['time'],res['name'],message)
+
+
 
 
 if __name__ == '__main__':
