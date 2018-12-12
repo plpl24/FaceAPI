@@ -1,9 +1,10 @@
-from identify import identify_face
-import getFileFromSmb
 import glob
 import os
-from datetime import datetime as dt
 import shutil
+from datetime import datetime as dt
+
+import getFileFromSmb
+from identify import identify_face
 
 from DBAccess.DAOBJ import DAO
 
@@ -34,6 +35,27 @@ class faceRecog_sort:
         self.sheet_name = sheet_name
         self.face = identify_face(faceapi_key)
 
+    def __Recog(self, debug, files):  # filesの写真を識別した結果を返す
+        RESULT = []
+
+        for file in files:
+            file_name = os.path.basename(file)
+            cap_time = dt.strptime(os.path.splitext(file_name)[0], getFileFromSmb.ft)  # 撮影した時間を取得
+
+            try:
+                name = self.face.get_name(file, debug=debug)  # FaceAPIで顔識別
+                if name is None:  # 顔が識別できたか
+                    shutil.move(file, "{}/{}".format(self.FaceNotMatch_path, file_name))  # ファイル移動
+                else:
+                    shutil.move(file, "{}/{}".format(self.Identified_path, "{}_{}".format(name, file_name)))  # ファイル移動
+
+                RESULT.append({'time': cap_time, 'name': name})  # 結果を保存
+            except ValueError:
+                if debug: print("顔が見つかりませんでした {}ファイルを{}に移動します".format(file_name, self.FaceNotFound_path))
+                shutil.move(file, "{}/{}".format(self.FaceNotFound_path, file_name))  # 見つからなかった場合のフォルダへ画像を移動
+
+        return RESULT  # 結果を返す
+
     def __call__(self, img_path, message: str, debug=False):
         """
         指定されたディレクトリ内の画像を識別して振り分けます
@@ -44,37 +66,32 @@ class faceRecog_sort:
         files = glob.glob("{}/*.jpg".format(img_path))
 
         if debug: print("顔認識開始")
-        RESULT = []
 
-        try:
-            for file in files:
-                file_name = os.path.basename(file)
-                cap_time = dt.strptime(os.path.splitext(file_name)[0], getFileFromSmb.ft)  # 撮影した時間を取得
-
-                try:
-                    name = self.face.get_name(file, debug=debug)  # 顔識別
-                    if name is None:  # 顔が識別できたか
-                        shutil.move(file, "{}/{}".format(self.FaceNotMatch_path, file_name))
-                    else:
-                        shutil.move(file, "{}/{}".format(self.Identified_path,"{}_{}".format(name,file_name)))
-
-                    RESULT.append({'time': cap_time, 'name': name})
-                except ValueError:
-                    if debug: print("顔が見つかりませんでした {}ファイルを{}に移動します".format(file_name, self.FaceNotFound_path))
-                    shutil.move(file, "{}/{}".format(self.FaceNotFound_path, file_name))
-        except KeyboardInterrupt as e:
-            if debug: print("キーボード入力がありました,終了します")
+        RESULT = self.__Recog(debug, files)
 
         if debug: print('SQL')
         with DAO() as dao:
             for res in RESULT:
-                dao.write(res['time'],res['name'],message)
+                dao.write(res['time'], res['name'], message)
 
 
+# hourで指定された時間以前の画像ファイルを削除する
+def delete_old_img(paths, hours=24):
+    rm_count = 0
+    import datetime as dtt
+    for path in paths:
+        files = glob.glob("{}/*.jpg".format(path))
+        for file in files:
+            img_time = dt.strptime(os.path.splitext(file)[0], getFileFromSmb.ft)
+            limit_date = dt.now() - dtt.timedelta(hours=hours)
+            if img_time < limit_date:
+                os.remove(file)
+                rm_count = rm_count + 1
+
+    return rm_count
 
 
 if __name__ == '__main__':
-    
     IMG_path = 'IMG'  # smbから取得してきた画像が一時出来に保存される場所
 
     file_getter_entry = getFileFromSmb.getFileFromSmb('150.89.234.237',
@@ -89,10 +106,9 @@ if __name__ == '__main__':
     paths = ["faceNotMatch", "identifiedIMG", "faceNotFound"]
     recog = faceRecog_sort(paths, "faceRecog", "50a2cf7e80844d0c80b31c5d8ce16b96")
 
-    while True :
+    while True:
 
         try:
-
 
             print("入室画像取得開始")
 
@@ -103,8 +119,13 @@ if __name__ == '__main__':
             file_getter_exit.get_images()
 
             recog(IMG_path, "退室しました", debug=True)
+            print("入退室処理完了")
+
             import time
-            print("入退室処理完了一分後に再処理を開始します")
-            time.sleep(60) #一分後に再識別
+
+            print("24時間以前に撮られた画像を削除します")
+            count = delete_old_img(paths)
+            print("{}枚 削除終了.一分後に再処理を開始します".format(count))
+            time.sleep(60)  # 一分後に再識別
         except KeyboardInterrupt as e:
             exit(0)
