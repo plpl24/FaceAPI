@@ -1,5 +1,5 @@
 import cognitive_face as CF
-import init
+from FaceAPI.raspberry import init
 import time
 
 init.Init(CF)

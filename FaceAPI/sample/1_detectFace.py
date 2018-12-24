@@ -1,7 +1,7 @@
 import cognitive_face as CF
 import cv2
 
-# 出力結果サンプル　[{'faceId': 'aa2fa9b3-86fa-4f06-94c1-ff93e913e0ae', 'faceRectangle': {'top': 153, 'left': 61, 'width': 137, 'height': 137}}]
+# 出力結果　[{'faceId': 'aa2fa9b3-86fa-4f06-94c1-ff93e913e0ae', 'faceRectangle': {'top': 153, 'left': 61, 'width': 137, 'height': 137}}]
 
 #顔の座標情報からRect作成
 def getRectangle(faceDictionary):
@@ -14,7 +14,7 @@ def getRectangle(faceDictionary):
 
 
 #サブスクリプションキー
-KEY=""
+KEY="50a2cf7e80844d0c80b31c5d8ce16b96"
 
 CF.Key.set(KEY)
 
@@ -22,7 +22,7 @@ CF.Key.set(KEY)
 CF.BaseUrl.set("https://eastasia.api.cognitive.microsoft.com/face/v1.0")
 
 #画像パス
-filePath = ""
+filePath = "face1.jpg"
 
 #顔特定
 faces = CF.face.detect(filePath)
